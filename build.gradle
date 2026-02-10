@@ -14,6 +14,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation libs.guava
+    implementation group: "com.beust", name: "jcommander", version: "1.82"
 }
 
 java {
@@ -25,8 +26,11 @@ java {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'com.liferay.upgrades.App'
+                'Main-Class': 'com.liferay.upgrades.main.Main'
         )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
 
