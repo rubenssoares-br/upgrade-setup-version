@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.liferay.upgrades'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation libs.junit.jupiter
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation libs.guava
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.liferay.upgrades.App'
+        )
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
