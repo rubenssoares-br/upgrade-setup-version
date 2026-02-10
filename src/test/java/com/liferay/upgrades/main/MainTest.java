@@ -1,12 +1,15 @@
 package com.liferay.upgrades.main;
 
 import com.liferay.upgrades.main.Main;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MainTest {
-    @Test void appHasAGreeting() {
-        Main classUnderTest = new Main();
-        assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
+
+    @Disabled("Logic for CLI parsing and file manipulation not yet implemented")
+    @Test
+    void testUpgradeLogic() {
+        // TODO
     }
 }
