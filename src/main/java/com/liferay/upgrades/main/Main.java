@@ -3,6 +3,7 @@ package com.liferay.upgrades.main;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import com.liferay.upgrades.project.dependency.docker.UpdateDockerCompose;
 import com.liferay.upgrades.project.dependency.git.GitHandler;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleProperties;
 
@@ -32,6 +33,17 @@ public class Main {
 
                 gitHandler.commit(versionOptions.directory, commitMsgStep1);
 
+                _log.info("Step 2 Updating docker-compose.yml...");
+
+                UpdateDockerCompose updateDockerCompose = new UpdateDockerCompose();
+                String oldDockerTag = updateDockerCompose.run(versionOptions.directory, versionOptions.dockerCompose);
+
+                if (oldDockerTag != null) {
+                    String commitMsgStep2 = String.format("%s Update liferay/dxp image from %s to %s in docker-compose.yml", versionOptions.ticket, oldDockerTag, versionOptions.dockerCompose);
+
+                    gitHandler.commit(versionOptions.directory, commitMsgStep2);
+                }
+
             }
         } catch (Exception  exception) {
             if (exception instanceof ParameterException) {
@@ -46,6 +58,7 @@ public class Main {
                 The available options are:
                 \t--ticket or -t to set the Jira ticket ID (Required)
                 \t--liferay-version or -l to set the new Liferay upgrade version (Required)
+                \t--docker-compose or -d to set the new image liferay version in docker compose
                 \t--folder or -f to specify the path for the liferay workspace (Required)
                """;
     }
@@ -77,6 +90,12 @@ public class Main {
             required = true
          )
         String liferayVersion;
+
+        @Parameter(
+                names = {"-d", "--docker-compose"},
+                description = "Set the new image liferay version in docker compose"
+        )
+        String dockerCompose;
 
         @Parameter(
                 names = {"-f", "--folder"},
