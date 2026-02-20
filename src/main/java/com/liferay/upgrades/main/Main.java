@@ -6,6 +6,7 @@ import com.beust.jcommander.ParameterException;
 import com.liferay.upgrades.project.dependency.docker.UpdateDockerCompose;
 import com.liferay.upgrades.project.dependency.git.GitHandler;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleProperties;
+import com.liferay.upgrades.project.dependency.gradle.UpdateGradleWrapper;
 import com.liferay.upgrades.project.dependency.gradle.UpdateSettingsGradle;
 
 import java.util.logging.Logger;
@@ -55,6 +56,18 @@ public class Main {
 
                 gitHandler.commit(versionOptions.directory, commitMsgStep3);
 
+                _log.info("Step 4 Updating Gradle Wrapper...");
+
+                UpdateGradleWrapper updateGradleWrapper = new UpdateGradleWrapper();
+
+                String oldGradleVersion = updateGradleWrapper.run(versionOptions.directory, versionOptions.gradleVersion);
+
+                if (oldGradleVersion != null) {
+                    String commitMsgStep4 = String.format("%s Update distributionUrl to Gradle %s in gradle-wrapper.properties", versionOptions.ticket, versionOptions.gradleVersion);
+
+                    gitHandler.commit(versionOptions.directory, commitMsgStep4);
+                }
+
             }
         } catch (Exception  exception) {
             if (exception instanceof ParameterException) {
@@ -69,6 +82,7 @@ public class Main {
                 The available options are:
                 \t--ticket or -t to set the Jira ticket ID (Required)
                 \t--plugin-version or -p to set the new Liferay workspace plugin version
+                \t--gradle-version or -g to Set the new Gradle version
                 \t--liferay-version or -l to set the new Liferay upgrade version (Required)
                 \t--docker-compose or -d to set the new image liferay version in docker compose
                 \t--folder or -f to specify the path for the liferay workspace (Required)
@@ -102,6 +116,13 @@ public class Main {
                 required = true
         )
         String pluginsVersion;
+
+        @Parameter(
+                names = {"-g", "--gradle-version"},
+                description = "Set the new Gradle version)",
+                required = true
+        )
+        String gradleVersion;
 
          @Parameter(
             names = {"-l", "--liferay-version"},
