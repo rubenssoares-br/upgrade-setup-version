@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.liferay.upgrades.project.dependency.docker.UpdateDockerCompose;
 import com.liferay.upgrades.project.dependency.git.GitHandler;
+import com.liferay.upgrades.project.dependency.gradle.BuildGradleRefactorer;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleProperties;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleWrapper;
 import com.liferay.upgrades.project.dependency.gradle.UpdateSettingsGradle;
@@ -67,6 +68,16 @@ public class Main {
 
                     gitHandler.commit(versionOptions.directory, commitMsgStep4);
                 }
+
+                _log.info("Step 5 Mass refactoring build.gradle files...");
+
+                BuildGradleRefactorer buildGradleRefactorer = new BuildGradleRefactorer();
+
+                buildGradleRefactorer.run(versionOptions.directory);
+
+                String commitMsgStep5 = String.format("%s Refactor build.gradle: migrate legacy dependency configurations", versionOptions.ticket);
+
+                gitHandler.commit(versionOptions.directory, commitMsgStep5);
 
             }
         } catch (Exception  exception) {
