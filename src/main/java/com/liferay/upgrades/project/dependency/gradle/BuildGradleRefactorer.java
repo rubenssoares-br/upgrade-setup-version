@@ -3,18 +3,32 @@ package com.liferay.upgrades.project.dependency.gradle;
 import java.util.logging.Logger;
 public class BuildGradleRefactorer {
 
-    public void run(String directory) throws Exception {
-        String[] commands = {
-                "find | grep -i \"build.gradle\"| while read origin; do echo \"$origin\"; cat \"$origin\"| sed -e 's/\\bcompile\\b/compileOnly/g' > \"$origin\".new; rm \"$origin\"; mv \"$origin\".new \"$origin\"; done",
-                "find | grep -i \"build.gradle\"| while read origin; do echo \"$origin\"; cat \"$origin\"| sed 's/\\btestCompile\\b/testCompileOnly/g' > \"$origin\".new; rm \"$origin\"; mv \"$origin\".new \"$origin\"; done",
-                "find | grep -i \"build.gradle\"| while read origin; do echo \"$origin\"; cat \"$origin\"| sed -e 's/\\bruntime\\b/runtimeOnly/g' > \"$origin\".new; rm \"$origin\"; mv \"$origin\".new \"$origin\"; done",
-                "find | grep -i \"build.gradle\"| while read origin; do echo \"$origin\"; cat \"$origin\"| sed 's/\\btestRuntime\\b/testRuntimeOnly/g' > \"$origin\".new; rm \"$origin\"; mv \"$origin\".new \"$origin\"; done"
+    public void refactorTaskDependencies(String directory) throws Exception {
+        String[] actions = {
+            "s/\\bcompile\\b/compileOnly/g",
+            "s/\\btestCompile\\b/testCompileOnly/g",
+            "s/\\bruntime\\b/runtimeOnly/g",
+            "s/\\btestRuntime\\b/testRuntimeOnly/g"
         };
-
-        for (String cmd : commands) {
-            _log.info("Running shell refactor...");
-            _executeShell(directory, cmd);
+        for (String action : actions) {
+            _executeShell(directory, _generateCommand(action));
         }
+    }
+
+    public void refactorPortalApi(String directory) throws Exception {
+        _executeShell(directory, _generateCommand("s/release\\.portal\\.api/release.dxp.api/g"));
+    }
+
+    public void removeCompatibilityProperties(String directory) throws Exception {
+        _executeShell(directory, _generateCommand("/sourceCompatibility/d"));
+        _executeShell(directory, _generateCommand("/targetCompatibility/d"));
+    }
+
+    private String _generateCommand(String sedAction) {
+        return String.format(
+                "find | grep -i \"build.gradle\"| while read origin; do cat \"$origin\"| sed -e '%s' > \"$origin\".new; rm \"$origin\"; mv \"$origin\".new \"$origin\"; done",
+                sedAction
+        );
     }
 
     private void _executeShell(String directory, String command) throws Exception {
