@@ -1,5 +1,6 @@
 package com.liferay.upgrades.project.dependency.gradle;
 
+import java.io.File;
 import java.util.logging.Logger;
 public class BuildGradleRefactorer {
 
@@ -19,9 +20,37 @@ public class BuildGradleRefactorer {
         _executeShell(directory, _generateCommand("s/release\\.portal\\.api/release.dxp.api/g"));
     }
 
-    public void removeCompatibilityProperties(String directory) throws Exception {
-        _executeShell(directory, _generateCommand("/sourceCompatibility/d"));
-        _executeShell(directory, _generateCommand("/targetCompatibility/d"));
+    public boolean removeCompatibilityProperties(String directory) throws Exception {
+
+        if (_hasProperty(directory, "sourceCompatibility") || _hasProperty(directory, "targetCompatibility")) {
+
+            _log.info("Compatibility properties found. Proceeding with removal...");
+
+            _executeShell(directory, _generateCommand("/sourceCompatibility/d"));
+
+            _executeShell(directory, _generateCommand("/targetCompatibility/d"));
+
+            return true;
+        } else {
+            _log.info("No sourceCompatibility or targetCompatibility properties found. Skipping step.");
+
+            return false;
+        }
+    }
+
+    private boolean _hasProperty(String directory, String propertyName) throws Exception {
+
+        String checkCommand = String.format("grep -rql --include=\"build.gradle\" \"%s\" .", propertyName);
+
+        ProcessBuilder processBuilder = new ProcessBuilder("sh", "-c", checkCommand);
+
+        processBuilder.directory(new File(directory));
+
+        Process process = processBuilder.start();
+
+        int exitCode = process.waitFor();
+
+        return exitCode == 0;
     }
 
     private String _generateCommand(String sedAction) {
