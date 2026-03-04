@@ -87,13 +87,16 @@ public class Main {
 
                 gitHandler.commit(versionOptions.directory, commitMsgStep6);
 
-                _log.info("Removing source/target compatibility properties...");
+                _log.info("Step 7: Checking for source/target compatibility properties...");
 
-                buildGradleRefactorer.removeCompatibilityProperties(versionOptions.directory);
+                boolean changed = buildGradleRefactorer.removeCompatibilityProperties(versionOptions.directory);
 
-                String commitMsgStep7 = String.format("%s Remove sourceCompatibility and targetCompatibility from build.gradle files", versionOptions.ticket);
+                if (changed) {
 
-                gitHandler.commit(versionOptions.directory, commitMsgStep7);
+                    String commitMsgStep7 = String.format("%s Remove sourceCompatibility and targetCompatibility from build.gradle files", versionOptions.ticket);
+
+                    gitHandler.commit(versionOptions.directory, commitMsgStep7);
+                }
 
             }
         } catch (Exception  exception) {
