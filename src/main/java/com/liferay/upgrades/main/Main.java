@@ -77,7 +77,7 @@ public class Main {
 
                 String commitMsgStep5 = String.format("%s Refactor build.gradle: migrate legacy dependency configurations", versionOptions.ticket);
 
-                gitHandler.commit(versionOptions.directory, versionOptions.ticket + commitMsgStep5);
+                gitHandler.commit(versionOptions.directory, commitMsgStep5);
 
                 _log.info("Updating Portal API to DXP API...");
 
@@ -91,7 +91,7 @@ public class Main {
 
                 buildGradleRefactorer.removeCompatibilityProperties(versionOptions.directory);
 
-                String commitMsgStep7 = String.format("%s Remove sourceCompatibility and targetCompatibility from build.gradle files");
+                String commitMsgStep7 = String.format("%s Remove sourceCompatibility and targetCompatibility from build.gradle files", versionOptions.ticket);
 
                 gitHandler.commit(versionOptions.directory, commitMsgStep7);
 
