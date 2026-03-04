@@ -69,15 +69,31 @@ public class Main {
                     gitHandler.commit(versionOptions.directory, commitMsgStep4);
                 }
 
-                _log.info("Step 5 Mass refactoring build.gradle files...");
+                _log.info("Step 5 refactoring deprecated tasks dependencies in build.gradle files...");
 
                 BuildGradleRefactorer buildGradleRefactorer = new BuildGradleRefactorer();
 
-                buildGradleRefactorer.run(versionOptions.directory);
+                buildGradleRefactorer.refactorTaskDependencies(versionOptions.directory);
 
                 String commitMsgStep5 = String.format("%s Refactor build.gradle: migrate legacy dependency configurations", versionOptions.ticket);
 
-                gitHandler.commit(versionOptions.directory, commitMsgStep5);
+                gitHandler.commit(versionOptions.directory, versionOptions.ticket + commitMsgStep5);
+
+                _log.info("Updating Portal API to DXP API...");
+
+                buildGradleRefactorer.refactorPortalApi(versionOptions.directory);
+
+                String commitMsgStep6 = String.format("%s Update release.portal.api to release.dxp.api in build.gradle files", versionOptions.ticket);
+
+                gitHandler.commit(versionOptions.directory, commitMsgStep6);
+
+                _log.info("Removing source/target compatibility properties...");
+
+                buildGradleRefactorer.removeCompatibilityProperties(versionOptions.directory);
+
+                String commitMsgStep7 = String.format("%s Remove sourceCompatibility and targetCompatibility from build.gradle files");
+
+                gitHandler.commit(versionOptions.directory, commitMsgStep7);
 
             }
         } catch (Exception  exception) {
