@@ -3,6 +3,7 @@ package com.liferay.upgrades.main;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import com.liferay.upgrades.project.dependency.bnd.BndRefactorer;
 import com.liferay.upgrades.project.dependency.docker.UpdateDockerCompose;
 import com.liferay.upgrades.project.dependency.git.GitHandler;
 import com.liferay.upgrades.project.dependency.gradle.BuildGradleRefactorer;
@@ -96,6 +97,18 @@ public class Main {
                     String commitMsgStep7 = String.format("%s Remove sourceCompatibility and targetCompatibility from build.gradle files", versionOptions.ticket);
 
                     gitHandler.commit(versionOptions.directory, commitMsgStep7);
+                }
+
+                _log.info("Step 8: Refactoring bnd.bnd files...");
+
+                BndRefactorer bndRefactorer = new BndRefactorer();
+
+                boolean bndChanged = bndRefactorer.run(versionOptions.directory);
+
+                if (bndChanged) {
+                    String commitMsgStep8 = String.format("%s Refactor bnd.bnd: remove hardcoded bundle-version constraints", versionOptions.ticket);
+
+                    gitHandler.commit(versionOptions.directory, commitMsgStep8);
                 }
 
             }
