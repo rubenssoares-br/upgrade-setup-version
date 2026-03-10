@@ -10,6 +10,7 @@ import com.liferay.upgrades.project.dependency.gradle.BuildGradleRefactorer;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleProperties;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleWrapper;
 import com.liferay.upgrades.project.dependency.gradle.UpdateSettingsGradle;
+import com.liferay.upgrades.project.dependency.sourceformatter.SourceFormatterConfigurator;
 
 import java.util.logging.Logger;
 
@@ -111,6 +112,16 @@ public class Main {
                     gitHandler.commit(versionOptions.directory, commitMsgStep8);
                 }
 
+                _log.info("Step 9: Configuring SourceFormatter properties...");
+
+                SourceFormatterConfigurator sourceFormatterConfigurator = new SourceFormatterConfigurator();
+
+                sourceFormatterConfigurator.configureSourceFormatter(versionOptions.directory, versionOptions.targetRelease);
+
+                sourceFormatterConfigurator.updateGradleProperties(versionOptions.directory);
+
+                gitHandler.commit(versionOptions.directory, versionOptions.ticket + " Workspace: Configure source-formatter.properties for " + versionOptions.targetRelease);
+
             }
         } catch (Exception  exception) {
             if (exception instanceof ParameterException) {
@@ -129,6 +140,7 @@ public class Main {
                 \t--liferay-version or -l to set the new Liferay upgrade version (Required)
                 \t--docker-compose or -d to set the new image liferay version in docker compose
                 \t--folder or -f to specify the path for the liferay workspace (Required)
+                \t--target-release or -t to Set the target release for source-formatter
                """;
     }
 
@@ -186,6 +198,13 @@ public class Main {
                 required = true
         )
         String directory;
+
+        @Parameter(
+                names = {"-t", "--target-release"},
+                description = "Set the target release for source-formatter",
+                required = true
+        )
+        String targetRelease;
     }
 
     private static final Logger _log = Logger.getLogger(Main.class.getName());
