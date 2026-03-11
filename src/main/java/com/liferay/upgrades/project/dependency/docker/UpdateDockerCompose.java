@@ -1,5 +1,6 @@
 package com.liferay.upgrades.project.dependency.docker;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,27 +9,21 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class UpdateDockerCompose {
 
     public String run(String directory, String newVersion) throws Exception {
+        Path projectRoot = Paths.get(directory);
 
-        String[] possibleFiles = {"docker-compose.yml", "docker-compose.yaml"};
-
-        Path path = null;
-
-        for (String fileName : possibleFiles) {
-            Path tempPath = Paths.get(directory, fileName);
-            if (Files.exists(tempPath)) {
-                path = tempPath;
-                break;
-            }
-        }
+        Path path = _findDockerComposeFile(projectRoot);
 
         if (path == null) {
-            _log.warning("No docker-compose file (.yml or .yaml) found in " + directory + ". Skipping step.");
+            _log.info("No docker-compose file (.yml or .yaml) found in " + directory + " or its subdirectories. Skipping step.");
             return null;
         }
+
+        _log.info("Updating docker-compose file at: " + path.toAbsolutePath());
 
         List<String> lines = Files.readAllLines(path);
 
@@ -47,7 +42,7 @@ public class UpdateDockerCompose {
                 String indentation = line.substring(0, line.indexOf("image:"));
                 updatedLines.add(indentation + _dockerImagePrefix + newVersion);
 
-                _log.info("Updated Docker image tag from " + oldTag + " to" + newVersion);
+                _log.info("Updated Docker image tag from " + oldTag + " to " + newVersion);
             } else {
                 updatedLines.add(line);
             }
@@ -58,6 +53,27 @@ public class UpdateDockerCompose {
         }
 
         return oldTag;
+    }
+
+    private Path _findDockerComposeFile(Path root) throws IOException {
+        try (Stream<Path> walk = Files.walk(root)) {
+            return walk.filter(p -> !Files.isDirectory(p))
+                       .filter(p -> {
+                           String pathString = p.toAbsolutePath().toString();
+
+                           if (pathString.contains("/build/") || pathString.contains("/.gradle/") ||
+                               pathString.contains("/.idea/") || pathString.contains("/bin/") ||
+                               pathString.contains("/.git/")) {
+                               return false;
+                           }
+
+                           String name = p.getFileName().toString();
+                           return name.equalsIgnoreCase("docker-compose.yml") || 
+                                  name.equalsIgnoreCase("docker-compose.yaml");
+                       })
+                       .findFirst()
+                       .orElse(null);
+        }
     }
 
 
