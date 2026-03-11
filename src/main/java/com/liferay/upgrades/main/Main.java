@@ -12,6 +12,7 @@ import com.liferay.upgrades.project.dependency.gradle.BuildServiceRefactorer;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleProperties;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleWrapper;
 import com.liferay.upgrades.project.dependency.gradle.UpdateSettingsGradle;
+import com.liferay.upgrades.project.dependency.jakarta.JakartaUpgradeRunner;
 import com.liferay.upgrades.project.dependency.sourceformatter.SourceFormatterConfigurator;
 import com.liferay.upgrades.project.dependency.sourceformatter.SourceFormatterRunner;
 
@@ -65,6 +66,7 @@ public class Main {
                 gitHandler.commit(versionOptions.directory, commitMsgStep3);
 
                 _log.info("Step 4 Updating Gradle Wrapper...");
+
 
                 UpdateGradleWrapper updateGradleWrapper = new UpdateGradleWrapper();
 
@@ -127,7 +129,7 @@ public class Main {
 
                 String commitMsgStep9 = String.format("%s Workspace: Configure source-formatter.properties for %s", versionOptions.ticket, versionOptions.targetRelease);
 
-                gitHandler.commit(versionOptions.directory, versionOptions.ticket + commitMsgStep9);
+                gitHandler.commit(versionOptions.directory, commitMsgStep9);
 
                 _log.info("Step 10: Running SourceFormatter runner...");
 
@@ -166,6 +168,16 @@ public class Main {
 
                     gitHandler.commit(versionOptions.directory, commitMsgStep12);
                 }
+
+                _log.info("Step 13: Upgrading to Jakarta EE...");
+
+                JakartaUpgradeRunner jakartaUpgradeRunner = new JakartaUpgradeRunner();
+
+                jakartaUpgradeRunner.run(versionOptions.directory);
+
+                String commitMsgStep13 = String.format("%s Upgrade to Jakarta EE", versionOptions.ticket);
+
+                gitHandler.commit(versionOptions.directory, commitMsgStep13);
 
             }
         } catch (Exception  exception) {
