@@ -11,24 +11,24 @@ public class BndRefactorer {
         String sedCommand;
 
         if (!_hasBundleVersionConstraints(directory)) {
-            _log.info("No 'bundle-version' constraints found in .bnd files. Skipping.");
+            _log.info("No 'bundle-version' attribute constraints found in .bnd files. Skipping.");
             return false;
         }
 
         if (os.contains("linux")) {
             _log.info("Linux/Unix detected for .bnd refactor.");
 
-            sedCommand = "sed -i -E 's/bundle-version=\"[[:alnum:].]+\"//g'";
+            sedCommand = "sed -i -E 's/;?bundle-version=\"[^\"]+\"//g'";
         } else if (os.contains("mac")) {
             _log.info("Mac OS detected for .bnd refactor.");
 
-            sedCommand = "sed -i '' -E 's/bundle-version=\"[[:alnum:].]+\"//g'";
+            sedCommand = "sed -i '' -E 's/;?bundle-version=\"[^\"]+\"//g'";
         } else {
             throw new UnsupportedOperationException("OS not supported for .bnd refactor: " + os);
         }
 
         String command = String.format(
-                "find . -type f -name \"*.bnd\" | while read -r file; do %s \"$file\"; done",
+                "find . -type d \\( -name .gradle -o -name build -o -name .git \\) -prune -o -type f -name \"*.bnd\" -print | while read -r file; do %s \"$file\"; done",
                 sedCommand
         );
 
@@ -37,7 +37,7 @@ public class BndRefactorer {
     }
 
     private boolean _hasBundleVersionConstraints(String directory) throws Exception {
-        String checkCommand = "grep -rql --include=\"*.bnd\" \"bundle-version=\" .";
+        String checkCommand = "grep -rqlE --include=\"*.bnd\" --exclude-dir={.gradle,build,.git} \"bundle-version=\\\"\" .";
 
         ProcessBuilder processBuilder = new ProcessBuilder("sh", "-c", checkCommand);
 
