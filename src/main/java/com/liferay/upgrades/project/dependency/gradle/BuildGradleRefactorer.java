@@ -16,8 +16,14 @@ public class BuildGradleRefactorer {
         }
     }
 
-    public void refactorPortalApi(String directory) throws Exception {
-        _executeShell(directory, _generateCommand("s/release\\.portal\\.api/release.dxp.api/g"));
+    public boolean refactorPortalApi(String directory) throws Exception {
+        if (_hasProperty(directory, "release.portal.api")) {
+            _executeShell(directory, _generateCommand("s/release\\.portal\\.api/release.dxp.api/g"));
+
+            return true;
+        }
+
+        return false;
     }
 
     public boolean removeCompatibilityProperties(String directory) throws Exception {
