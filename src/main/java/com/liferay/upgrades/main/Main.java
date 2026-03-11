@@ -67,7 +67,6 @@ public class Main {
 
                 _log.info("Step 4 Updating Gradle Wrapper...");
 
-
                 UpdateGradleWrapper updateGradleWrapper = new UpdateGradleWrapper();
 
                 String oldGradleVersion = updateGradleWrapper.run(versionOptions.directory, versionOptions.gradleVersion);
@@ -90,11 +89,13 @@ public class Main {
 
                 _log.info("Updating Portal API to DXP API...");
 
-                buildGradleRefactorer.refactorPortalApi(versionOptions.directory);
+                boolean portalApiChanged = buildGradleRefactorer.refactorPortalApi(versionOptions.directory);
 
-                String commitMsgStep6 = String.format("%s Update release.portal.api to release.dxp.api in build.gradle files", versionOptions.ticket);
+                if (portalApiChanged) {
+                    String commitMsgStep6 = String.format("%s Update release.portal.api to release.dxp.api in build.gradle files", versionOptions.ticket);
 
-                gitHandler.commit(versionOptions.directory, commitMsgStep6);
+                    gitHandler.commit(versionOptions.directory, commitMsgStep6);
+                }
 
                 _log.info("Step 7: Checking for source/target compatibility properties...");
 
@@ -197,7 +198,7 @@ public class Main {
                 \t--liferay-version or -l to set the new Liferay upgrade version (Required)
                 \t--docker-compose or -d to set the new image liferay version in docker compose
                 \t--folder or -f to specify the path for the liferay workspace (Required)
-                \t--target-release or -t to Set the target release for source-formatter
+                \t--target-release or -tr to Set the target release for source-formatter
                """;
     }
 
@@ -257,7 +258,7 @@ public class Main {
         String directory;
 
         @Parameter(
-                names = {"-t", "--target-release"},
+                names = {"-tr", "--target-release"},
                 description = "Set the target release for source-formatter",
                 required = true
         )
