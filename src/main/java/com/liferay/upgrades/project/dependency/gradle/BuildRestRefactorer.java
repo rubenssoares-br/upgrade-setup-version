@@ -19,6 +19,12 @@ public class BuildRestRefactorer {
     }
 
     private void _findRestConfigYaml(File directory, List<File> restModules) {
+        String name = directory.getName();
+
+        if (name.equals("bin") || name.equals("build") || name.equals(".gradle") || name.equals(".idea")) {
+            return;
+        }
+
         File[] files = directory.listFiles();
         if (files == null) return;
 
