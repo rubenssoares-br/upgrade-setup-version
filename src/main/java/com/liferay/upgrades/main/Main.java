@@ -125,7 +125,9 @@ public class Main {
 
                 sourceFormatterConfigurator.updateGradleProperties(versionOptions.directory);
 
-                gitHandler.commit(versionOptions.directory, versionOptions.ticket + " Workspace: Configure source-formatter.properties for " + versionOptions.targetRelease);
+                String commitMsgStep9 = String.format("%s Workspace: Configure source-formatter.properties for %s", versionOptions.ticket, versionOptions.targetRelease);
+
+                gitHandler.commit(versionOptions.directory, versionOptions.ticket + commitMsgStep9);
 
                 _log.info("Step 10: Running SourceFormatter runner...");
 
@@ -133,7 +135,9 @@ public class Main {
 
                 sourceFormatterRunner.run(versionOptions.directory);
 
-                gitHandler.commit(versionOptions.directory, versionOptions.ticket + " SF automation update dependencies");
+                String commitMsgStep10 = String.format("%s SF automation update dependencies", versionOptions.ticket);
+
+                gitHandler.commit(versionOptions.directory, commitMsgStep10);
 
                 _log.info("Step 11: Running buildService for modules with service.xml...");
 
@@ -144,9 +148,9 @@ public class Main {
                 for (File module : serviceModules) {
                     buildServiceRefactorer.run(module.getAbsolutePath());
 
-                    String commitMsg = String.format("%s buildService in %s module", versionOptions.ticket, module.getName());
+                    String commitMsgStep11 = String.format("%s buildService in %s module", versionOptions.ticket, module.getName());
 
-                    gitHandler.commit(versionOptions.directory, commitMsg);
+                    gitHandler.commit(versionOptions.directory, commitMsgStep11);
                 }
 
                 _log.info("Step 12: Running buildRest for modules with rest-config.yaml...");
@@ -158,9 +162,9 @@ public class Main {
                 for (File module : restModules) {
                     buildRestRefactorer.run(module.getAbsolutePath());
 
-                    String commitMsg = String.format("%s buildRest in %s module", versionOptions.ticket, module.getName());
+                    String commitMsgStep12 = String.format("%s buildRest in %s module", versionOptions.ticket, module.getName());
 
-                    gitHandler.commit(versionOptions.directory, commitMsg);
+                    gitHandler.commit(versionOptions.directory, commitMsgStep12);
                 }
 
             }
