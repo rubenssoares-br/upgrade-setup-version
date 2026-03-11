@@ -7,11 +7,16 @@ import com.liferay.upgrades.project.dependency.bnd.BndRefactorer;
 import com.liferay.upgrades.project.dependency.docker.UpdateDockerCompose;
 import com.liferay.upgrades.project.dependency.git.GitHandler;
 import com.liferay.upgrades.project.dependency.gradle.BuildGradleRefactorer;
+import com.liferay.upgrades.project.dependency.gradle.BuildRestRefactorer;
+import com.liferay.upgrades.project.dependency.gradle.BuildServiceRefactorer;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleProperties;
 import com.liferay.upgrades.project.dependency.gradle.UpdateGradleWrapper;
 import com.liferay.upgrades.project.dependency.gradle.UpdateSettingsGradle;
 import com.liferay.upgrades.project.dependency.sourceformatter.SourceFormatterConfigurator;
+import com.liferay.upgrades.project.dependency.sourceformatter.SourceFormatterRunner;
 
+import java.io.File;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class Main {
@@ -121,6 +126,42 @@ public class Main {
                 sourceFormatterConfigurator.updateGradleProperties(versionOptions.directory);
 
                 gitHandler.commit(versionOptions.directory, versionOptions.ticket + " Workspace: Configure source-formatter.properties for " + versionOptions.targetRelease);
+
+                _log.info("Step 10: Running SourceFormatter runner...");
+
+                SourceFormatterRunner sourceFormatterRunner = new SourceFormatterRunner();
+
+                sourceFormatterRunner.run(versionOptions.directory);
+
+                gitHandler.commit(versionOptions.directory, versionOptions.ticket + " SF automation update dependencies");
+
+                _log.info("Step 11: Running buildService for modules with service.xml...");
+
+                BuildServiceRefactorer buildServiceRefactorer = new BuildServiceRefactorer();
+
+                List<File> serviceModules = buildServiceRefactorer.findServiceModules(versionOptions.directory);
+
+                for (File module : serviceModules) {
+                    buildServiceRefactorer.run(module.getAbsolutePath());
+
+                    String commitMsg = String.format("%s buildService in %s module", versionOptions.ticket, module.getName());
+
+                    gitHandler.commit(versionOptions.directory, commitMsg);
+                }
+
+                _log.info("Step 12: Running buildRest for modules with rest-config.yaml...");
+
+                BuildRestRefactorer buildRestRefactorer = new BuildRestRefactorer();
+
+                List<File> restModules = buildRestRefactorer.findRestModules(versionOptions.directory);
+
+                for (File module : restModules) {
+                    buildRestRefactorer.run(module.getAbsolutePath());
+
+                    String commitMsg = String.format("%s buildRest in %s module", versionOptions.ticket, module.getName());
+
+                    gitHandler.commit(versionOptions.directory, commitMsg);
+                }
 
             }
         } catch (Exception  exception) {
