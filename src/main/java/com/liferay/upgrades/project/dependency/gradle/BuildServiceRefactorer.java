@@ -20,6 +20,12 @@ public class BuildServiceRefactorer {
     }
 
     private void _findServiceXml(File directory, List<File> serviceModules) {
+        String name = directory.getName();
+
+        if (name.equals("bin") || name.equals("build") || name.equals(".gradle") || name.equals(".idea")) {
+            return;
+        }
+
         File[] files = directory.listFiles();
         if (files == null) return;
 
