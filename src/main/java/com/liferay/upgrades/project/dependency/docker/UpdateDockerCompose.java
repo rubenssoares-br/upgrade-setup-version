@@ -14,6 +14,11 @@ import java.util.stream.Stream;
 public class UpdateDockerCompose {
 
     public String run(String directory, String newVersion) throws Exception {
+        if (newVersion == null) {
+            _log.info("No docker-compose version provided. Skipping step.");
+            return null;
+        }
+
         Path projectRoot = Paths.get(directory);
 
         Path path = _findDockerComposeFile(projectRoot);
@@ -38,6 +43,11 @@ public class UpdateDockerCompose {
 
             if (matcher.find()) {
                 oldTag = matcher.group(1).trim();
+
+                if (oldTag.equals(newVersion)) {
+                    _log.info("Docker tag is already " + newVersion + ". Skipping update.");
+                    return null;
+                }
 
                 String indentation = line.substring(0, line.indexOf("image:"));
                 updatedLines.add(indentation + _dockerImagePrefix + newVersion);
