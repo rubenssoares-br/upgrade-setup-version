@@ -51,11 +51,10 @@ java -jar build/libs/upgrade-setup-version.jar \
   --ticket "ECU-1234" \
   --folder "/path/to/liferay-workspace" \
   --liferay-version "dxp-2024.q4.0" \
-  --target-release "2024.q4.0" \
-  --plugin-version "11.0.1" \
-  --gradle-version "8.5" \
-  --docker-compose "2024.q4.0"
+  --plugin-version "11.0.1"
 ```
+
+*Note: If `--target-release` or `--docker-compose` are omitted, they are automatically derived from the `--liferay-version`. If `--gradle-version` is omitted, the Gradle Wrapper update step is skipped.*
 
 ### Parameters
 
@@ -64,10 +63,10 @@ java -jar build/libs/upgrade-setup-version.jar \
 | `--ticket` | `-t` | Jira ticket ID (used for commit messages) | Yes |
 | `--folder` | `-f` | Path to the Liferay Workspace root | Yes |
 | `--liferay-version`| `-l` | The target Liferay version (e.g., `dxp-2024.q4.0`) | Yes |
-| `--target-release` | `-tr` | Target release for Source Formatter (e.g., `2024.q4.0`) | Yes |
 | `--plugin-version` | `-p` | New Liferay Workspace plugin version | Yes |
-| `--gradle-version` | `-g` | New Gradle version (e.g., `8.5`) | Yes |
-| `--docker-compose` | `-d` | New Docker image tag | No |
+| `--target-release` | `-tr` | Target release (Derived from `-l` if omitted) | No |
+| `--gradle-version` | `-g` | New Gradle version (e.g., `8.5`) | No |
+| `--docker-compose` | `-d` | New Docker image tag (Derived from `-l` if omitted) | No |
 
 ## Project Structure
 
