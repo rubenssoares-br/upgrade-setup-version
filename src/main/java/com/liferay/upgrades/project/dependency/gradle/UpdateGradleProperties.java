@@ -24,6 +24,7 @@ public class UpdateGradleProperties {
 
         String oldVersion = "";
         boolean productFound = false;
+        boolean changed = false;
 
         for (String line: lines) {
             String trimmedLine = line.trim();
@@ -35,15 +36,23 @@ public class UpdateGradleProperties {
 
             if (_isLegacyProperty(trimmedLine)) {
                 _log.info("Removing legacy property: " + trimmedLine.split("=")[0]);
+                changed = true;
                 continue;
             }
 
             if (trimmedLine.startsWith(_productProperty + "=")) {
                 oldVersion = trimmedLine.substring(trimmedLine.indexOf("=") + 1).trim();
 
-                updatedLines.add(_productProperty + "=" + newVersion);
+                if (oldVersion.equals(newVersion)) {
+                    _log.info(_productProperty + " is already " + newVersion);
+                    updatedLines.add(line);
+                } else {
+                    updatedLines.add(_productProperty + "=" + newVersion);
+                    changed = true;
+                    _log.info("Updated " + _productProperty + " to " + newVersion);
+                }
+
                 productFound = true;
-                _log.info("Updated " + _productProperty + "to " + newVersion);
             } else {
                 updatedLines.add(line);
             }
@@ -51,12 +60,16 @@ public class UpdateGradleProperties {
 
         if (!productFound) {
             updatedLines.add(_productProperty + "=" + newVersion);
+            changed = true;
             _log.info("Added " + _productProperty + "=" + newVersion + " to end of file.");
         }
 
-        Files.write(path, updatedLines);
+        if (changed) {
+            Files.write(path, updatedLines);
+            return oldVersion.isEmpty() ? "legacy" : oldVersion;
+        }
 
-        return oldVersion.isEmpty() ? "legacy" : oldVersion;
+        return null;
     }
 
 
