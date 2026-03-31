@@ -34,6 +34,11 @@ public class UpdateGradleWrapper {
 
                 oldVersion = _extractVersion(trimmedLine);
 
+                if (oldVersion.equals(gradleVersion)) {
+                    _log.info("Gradle version is already " + gradleVersion + ". Skipping update.");
+                    return null;
+                }
+
                 String newUrl = "https\\://services.gradle.org/distributions/gradle-" + gradleVersion + "-bin.zip";
 
                 updatedLines.add(_distUrlKey + newUrl);
