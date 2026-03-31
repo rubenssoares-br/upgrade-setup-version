@@ -18,7 +18,32 @@ public class SourceFormatterConfigurator {
 
             _log.info("Created source-formatter.properties targeting " + targetRelease);
         } else {
-            _log.info("source-formatter.properties already exists. Skipping creation");
+            _log.info("source-formatter.properties already exists. Updating properties...");
+
+            List<String> lines = Files.readAllLines(file.toPath());
+            boolean liferayVersionFound = false;
+            boolean releaseVersionFound = false;
+
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i).trim();
+                if (line.startsWith("upgrade.to.liferay.version=")) {
+                    lines.set(i, "upgrade.to.liferay.version=7.4");
+                    liferayVersionFound = true;
+                } else if (line.startsWith("upgrade.to.release.version=")) {
+                    lines.set(i, "upgrade.to.release.version=" + targetRelease);
+                    releaseVersionFound = true;
+                }
+            }
+
+            if (!liferayVersionFound) {
+                lines.add("upgrade.to.liferay.version=7.4");
+            }
+            if (!releaseVersionFound) {
+                lines.add("upgrade.to.release.version=" + targetRelease);
+            }
+
+            Files.write(file.toPath(), lines);
+            _log.info("Updated source-formatter.properties with Liferay 7.4 and release " + targetRelease);
         }
     }
 
