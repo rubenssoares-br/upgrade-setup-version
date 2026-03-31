@@ -26,6 +26,21 @@ public class Main {
         try {
             VersionOptions versionOptions = _resolveOptions(args);
 
+            if (versionOptions.targetRelease == null || versionOptions.targetRelease.isEmpty()) {
+                versionOptions.targetRelease = _deriveVersion(versionOptions.liferayVersion);
+                _log.info("Derived target-release: " + versionOptions.targetRelease);
+            }
+
+            if (versionOptions.targetRelease.endsWith("-lts")) {
+                versionOptions.targetRelease = versionOptions.targetRelease.substring(0, versionOptions.targetRelease.length() - 4);
+                _log.info("Removed -lts from target-release: " + versionOptions.targetRelease);
+            }
+
+            if (versionOptions.dockerCompose == null || versionOptions.dockerCompose.isEmpty()) {
+                versionOptions.dockerCompose = _deriveVersion(versionOptions.liferayVersion);
+                _log.info("Derived docker-compose: " + versionOptions.dockerCompose);
+            }
+
             if (!versionOptions.directory.isEmpty() && !versionOptions.liferayVersion.isEmpty() && !versionOptions.ticket.isEmpty()) {
 
                 _log.info("Starting upgrade process...");
@@ -226,6 +241,20 @@ public class Main {
         return versionOptions;
     }
 
+    private static String _deriveVersion(String liferayVersion) {
+        if (liferayVersion == null || liferayVersion.isEmpty()) {
+            return "";
+        }
+
+        if (liferayVersion.startsWith("dxp-")) {
+            return liferayVersion.substring(4);
+        } else if (liferayVersion.startsWith("portal-")) {
+            return liferayVersion.substring(7);
+        }
+
+        return liferayVersion;
+    }
+
     private static class VersionOptions {
 
         @Parameter(
@@ -270,8 +299,7 @@ public class Main {
 
         @Parameter(
                 names = {"-tr", "--target-release"},
-                description = "Set the target release for source-formatter",
-                required = true
+                description = "Set the target release for source-formatter"
         )
         String targetRelease;
     }
