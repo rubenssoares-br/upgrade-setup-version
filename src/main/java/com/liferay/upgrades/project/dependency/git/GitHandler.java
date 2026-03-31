@@ -11,10 +11,27 @@ public class GitHandler {
 
         _executeCommand(directory, "git", "add", ".");
 
+        if (!_hasStagedChanges(directory)) {
+            _log.info("No changes to commit for: " + message);
+            return;
+        }
+
         _executeCommand(directory, "git", "commit", "-m", message);
 
         _log.info("Git commit successful: " + message);
 
+    }
+
+    private boolean _hasStagedChanges(String directory) throws Exception {
+        ProcessBuilder processBuilder = new ProcessBuilder("git", "diff", "--cached", "--quiet");
+
+        processBuilder.directory(Paths.get(directory).toFile());
+
+        Process process = processBuilder.start();
+
+        int exitCode = process.waitFor();
+
+        return exitCode == 1;
     }
 
     private void _executeCommand(String directory, String... command) throws Exception {
