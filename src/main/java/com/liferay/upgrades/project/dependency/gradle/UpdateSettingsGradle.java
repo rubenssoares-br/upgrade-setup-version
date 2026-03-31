@@ -37,6 +37,11 @@ public class UpdateSettingsGradle {
             if (matcher.find()) {
                 oldVersion = matcher.group(1);
 
+                if (oldVersion.equals(newVersion)) {
+                    _log.info(String.format("%s is already %s. Skipping update.", _pluginId, newVersion));
+                    return null;
+                }
+
                 String updatedLine = line.replace(oldVersion, newVersion);
                 updatedLines.add(updatedLine);
 
