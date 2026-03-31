@@ -30,19 +30,23 @@ public class Main {
 
                 _log.info("Starting upgrade process...");
 
+                GitHandler gitHandler = new GitHandler();
+
                 UpdateGradleProperties updateGradleProperties = new UpdateGradleProperties();
 
                 String oldVersionLiferay = updateGradleProperties.run(versionOptions.directory, versionOptions.liferayVersion);
 
-                _log.info("Step 1 (gradle.properties) complete.");
+                if (oldVersionLiferay != null) {
+                    _log.info("Step 1 (gradle.properties) complete.");
 
-                _log.info("Commiting Step 1...");
+                    _log.info("Commiting Step 1...");
 
-                String commitMsgStep1 = String.format("%s Update liferay.workspace.product from %s to %s in gradle.properties", versionOptions.ticket, oldVersionLiferay, versionOptions.liferayVersion);
+                    String commitMsgStep1 = String.format("%s Update liferay.workspace.product from %s to %s in gradle.properties", versionOptions.ticket, oldVersionLiferay, versionOptions.liferayVersion);
 
-                GitHandler gitHandler = new GitHandler();
-
-                gitHandler.commit(versionOptions.directory, commitMsgStep1);
+                    gitHandler.commit(versionOptions.directory, commitMsgStep1);
+                } else {
+                    _log.info("Step 1 (gradle.properties) already up to date.");
+                }
 
                 _log.info("Step 2 Updating docker-compose.yml...");
 
@@ -61,20 +65,28 @@ public class Main {
 
                 String oldPluginVersion = updateSettingsGradle.run(versionOptions.directory, versionOptions.pluginsVersion);
 
-                String commitMsgStep3 = String.format("%s Update com.liferay.gradle.plugins.workspace from %s to %s in settings.gradle", versionOptions.ticket, oldPluginVersion, versionOptions.pluginsVersion);
+                if (oldPluginVersion != null) {
+                    String commitMsgStep3 = String.format("%s Update com.liferay.gradle.plugins.workspace from %s to %s in settings.gradle", versionOptions.ticket, oldPluginVersion, versionOptions.pluginsVersion);
 
-                gitHandler.commit(versionOptions.directory, commitMsgStep3);
+                    gitHandler.commit(versionOptions.directory, commitMsgStep3);
+                } else {
+                    _log.info("Step 3 (settings.gradle) already up to date.");
+                }
 
                 _log.info("Step 4 Updating Gradle Wrapper...");
 
-                UpdateGradleWrapper updateGradleWrapper = new UpdateGradleWrapper();
+                if (versionOptions.gradleVersion != null) {
+                    UpdateGradleWrapper updateGradleWrapper = new UpdateGradleWrapper();
 
-                String oldGradleVersion = updateGradleWrapper.run(versionOptions.directory, versionOptions.gradleVersion);
+                    String oldGradleVersion = updateGradleWrapper.run(versionOptions.directory, versionOptions.gradleVersion);
 
-                if (oldGradleVersion != null) {
-                    String commitMsgStep4 = String.format("%s Update distributionUrl to Gradle %s in gradle-wrapper.properties", versionOptions.ticket, versionOptions.gradleVersion);
+                    if (oldGradleVersion != null) {
+                        String commitMsgStep4 = String.format("%s Update distributionUrl to Gradle %s in gradle-wrapper.properties", versionOptions.ticket, versionOptions.gradleVersion);
 
-                    gitHandler.commit(versionOptions.directory, commitMsgStep4);
+                        gitHandler.commit(versionOptions.directory, commitMsgStep4);
+                    }
+                } else {
+                    _log.info("Skipping Step 4: gradle-version not provided.");
                 }
 
                 _log.info("Step 5 refactoring deprecated tasks dependencies in build.gradle files...");
@@ -232,8 +244,7 @@ public class Main {
 
         @Parameter(
                 names = {"-g", "--gradle-version"},
-                description = "Set the new Gradle version)",
-                required = true
+                description = "Set the new Gradle version)"
         )
         String gradleVersion;
 
