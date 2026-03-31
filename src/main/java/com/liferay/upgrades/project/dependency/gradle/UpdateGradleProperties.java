@@ -1,9 +1,5 @@
 package com.liferay.upgrades.project.dependency.gradle;
 
-import com.liferay.upgrades.project.dependency.Step;
-import com.liferay.upgrades.project.dependency.model.Context;
-import com.liferay.upgrades.project.dependency.model.VersionOptions;
-
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,35 +9,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class UpdateGradleProperties implements Step {
+public class UpdateGradleProperties {
 
-    @Override
-    public String commitMessage(Context context) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(context.ticket()).append(" ");
-        sb.append("Update liferay.workspace.product from ");
-        sb.append(context.oldVersion());
-        sb.append(" to ");
-        sb.append(context.gradleVersion());
-
-        return sb.toString();
-    }
-
-    @Override
-    public Context applyChanges(VersionOptions stepOptions)
-        throws Exception {
-
-        String newVersion = stepOptions.liferayVersion;
-        String directory = stepOptions.directory;
-
-        Path path = Paths.get(
-            directory, "gradle.properties");
+    public String run(String directory, String newVersion) throws Exception {
+        Path path = Paths.get(directory, "gradle.properties");
 
         if (!Files.exists(path)) {
-            throw new FileNotFoundException(
-                "gradle.properties not found at: " +
-                    path.toAbsolutePath());
+            throw new FileNotFoundException("gradle.properties not found at: " + path.toAbsolutePath());
         }
 
         List<String> lines = Files.readAllLines(path);
@@ -49,71 +23,46 @@ public class UpdateGradleProperties implements Step {
         List<String> updatedLines = new ArrayList<>();
 
         String oldVersion = "";
-
         boolean productFound = false;
 
         for (String line: lines) {
             String trimmedLine = line.trim();
 
-            if (trimmedLine.isEmpty() ||
-                trimmedLine.startsWith("#")) {
-
+            if (trimmedLine.isEmpty() || trimmedLine.startsWith("#")) {
                 updatedLines.add(line);
-
                 continue;
             }
 
             if (_isLegacyProperty(trimmedLine)) {
-                _log.info(
-                    "Removing legacy property: " +
-                        trimmedLine.split("=")[0]);
-
+                _log.info("Removing legacy property: " + trimmedLine.split("=")[0]);
                 continue;
             }
 
             if (trimmedLine.startsWith(_productProperty + "=")) {
-                oldVersion = trimmedLine.substring(
-                    trimmedLine.indexOf("=") + 1
-                ).trim();
+                oldVersion = trimmedLine.substring(trimmedLine.indexOf("=") + 1).trim();
 
-                updatedLines.add(
-                    _productProperty + "=" + newVersion);
-
+                updatedLines.add(_productProperty + "=" + newVersion);
                 productFound = true;
-
-                _log.info(
-                    "Updated " + _productProperty + "to " + newVersion);
-            }
-            else {
+                _log.info("Updated " + _productProperty + "to " + newVersion);
+            } else {
                 updatedLines.add(line);
             }
         }
 
         if (!productFound) {
-            updatedLines.add(
-                _productProperty + "=" + newVersion);
-
-            _log.info(
-                "Added " + _productProperty + "=" + newVersion + " to end of file.");
+            updatedLines.add(_productProperty + "=" + newVersion);
+            _log.info("Added " + _productProperty + "=" + newVersion + " to end of file.");
         }
 
         Files.write(path, updatedLines);
 
-        return new Context(
-            stepOptions.ticket, null, directory,
-            newVersion, null, oldVersion, null);
+        return oldVersion.isEmpty() ? "legacy" : oldVersion;
     }
 
-    private boolean _isLegacyProperty(String line) {
-        return _legacyProperties.stream(
-        ).anyMatch(key -> line.startsWith(key + "="));
-    }
 
-    private static final Logger _log = Logger.getLogger(
-        UpdateGradleProperties.class.getName());
+    private static final Logger _log = Logger.getLogger(UpdateGradleProperties.class.getName());
 
-    private static final String _productProperty =
-        "liferay.workspace.product";
+    private static final String _productProperty = "liferay.workspace.product";
 
     private static final Set<String> _legacyProperties = Set.of(
         "liferay.workspace.target.platform.version",
@@ -122,4 +71,8 @@ public class UpdateGradleProperties implements Step {
         "app.server.tomcat.version"
     );
 
+    private boolean _isLegacyProperty(String line) {
+        return _legacyProperties.stream()
+                .anyMatch(key -> line.startsWith(key + "="));
+    }
 }
