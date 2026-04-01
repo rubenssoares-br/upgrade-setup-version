@@ -3,6 +3,7 @@ plugins {
 }
 
 group = 'com.liferay.upgrades'
+version = '1.0.0'
 
 repositories {
     mavenCentral()
@@ -24,6 +25,7 @@ java {
 }
 
 jar {
+    archiveFileName = "upgrade-setup-version.jar"
     manifest {
         attributes(
                 'Main-Class': 'com.liferay.upgrades.main.Main'
