@@ -37,17 +37,27 @@ The tool performs the following 13 steps in order:
 
 ## How to Run
 
-### 1. Build the Project
-Compile the project and generate the executable JAR:
+### 1. Installation
+
+To install or update to the latest version, run:
+
+```bash
+curl -o- https://raw.githubusercontent.com/liferay-upgrades/upgrade-setup-version/master/install.sh | bash
+```
+
+After installation, reload your terminal or run `source ~/.bashrc`. You can then use the tool with the alias `usv`.
+
+### 2. Manual Build
+If you prefer to build it yourself:
 ```bash
 ./gradlew clean build
 ```
 
-### 2. Execute the Tool
-Run the tool by pointing it to a customer's Liferay Workspace.
+### 3. Execute the Tool
+Run the tool by pointing it to a customer's Liferay Workspace using the installed alias `usv`:
 
 ```bash
-java -jar build/libs/upgrade-setup-version.jar \
+usv \
   --ticket "ECU-1234" \
   --folder "/path/to/liferay-workspace" \
   --liferay-version "dxp-2024.q4.0" \
